@@ -571,7 +571,7 @@ export default function Board() {
           <div
             ref={containerRef}
             data-board-container
-            className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 min-h-[calc(100vh-12rem)]"
+            className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 min-h-[calc(100vh-20rem)]"
           >
             {visibleColumns.map((column) => (
               <Column
