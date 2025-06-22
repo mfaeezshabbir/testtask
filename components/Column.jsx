@@ -4,6 +4,7 @@ import {
   ClipboardList,
   CirclePause,
   CircleCheck,
+  Plus,
 } from "lucide-react";
 import { useDroppable } from "@dnd-kit/core";
 import {
@@ -54,6 +55,42 @@ export default function Column({ column, cardCount, isArchive = false }) {
 
   const columnStyle = columnStyles[column.id] || {};
 
+  // Empty state messages for different column types
+  const getEmptyStateMessage = () => {
+    if (isArchive) return "Drag cards here to archive them";
+    
+    switch (column.id) {
+      case "todo": 
+        return "Add tasks to get started";
+      case "in-progress":
+        return "Move cards here to start working";
+      case "review":
+        return "Items awaiting review";
+      case "completed":
+        return "Completed tasks will appear here";
+      default:
+        return "Drag and drop cards here";
+    }
+  };
+
+  // Icons for empty states
+  const getEmptyStateIcon = () => {
+    if (isArchive) return <Archive className="w-6 h-6 mb-2" />;
+    
+    switch (column.id) {
+      case "todo": 
+        return <ClipboardList className="w-6 h-6 mb-2 text-gray-400" />;
+      case "in-progress":
+        return <img src="/inprogress.svg" alt="In Progress" className="w-6 h-6 mb-2" />;
+      case "review":
+        return <CirclePause className="w-6 h-6 mb-2 text-gray-400" />;
+      case "completed":
+        return <CircleCheck className="w-6 h-6 mb-2 text-gray-400" />;
+      default:
+        return <Plus className="w-6 h-6 mb-2 text-gray-400" />;
+    }
+  };
+
   return (
     <div
       ref={(node) => {
@@ -72,8 +109,8 @@ export default function Column({ column, cardCount, isArchive = false }) {
         isArchive && column.cards.length === 0 ? "archive-column-new" : ""
       }`}
       style={{
-        minHeight: column.cards.length === 0 ? `${headerHeight}px` : 'auto',
-        height: 'fit-content', // This prevents the column from expanding to full screen height
+        minHeight: '150px', // Always maintain a minimum height for interaction
+        height: 'fit-content', 
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -90,20 +127,28 @@ export default function Column({ column, cardCount, isArchive = false }) {
         </div>
       </div>
 
-      <div 
-        className={`p-2 overflow-y-visible column-cards-container ${
-          column.cards.length === 0 ? 'hidden' : 'block'
-        }`}
-      >
-        <SortableContext
-          id={column.id}
-          items={column.cards.map((card) => card.id)}
-          strategy={verticalListSortingStrategy}
-        >
-          {column.cards.map((card) => (
-            <Card key={card.id} card={card} columnId={column.id} />
-          ))}
-        </SortableContext>
+      {/* Card container */}
+      <div className="p-2 overflow-y-visible column-cards-container flex-grow">
+        {column.cards.length > 0 ? (
+          <SortableContext
+            id={column.id}
+            items={column.cards.map((card) => card.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            {column.cards.map((card) => (
+              <Card key={card.id} card={card} columnId={column.id} />
+            ))}
+          </SortableContext>
+        ) : !isOver && (
+          <div className={`flex flex-col items-center justify-center text-gray-400 p-4 h-32 
+            ${isArchive ? "bg-gray-50" : "bg-gray-50"} 
+            border-2 border-dashed border-gray-200 rounded-lg`}>
+            {getEmptyStateIcon()}
+            <p className="text-xs text-center">
+              {getEmptyStateMessage()}
+            </p>
+          </div>
+        )}
 
         {isOver && (
           <div
@@ -120,15 +165,6 @@ export default function Column({ column, cardCount, isArchive = false }) {
             >
               {isArchive ? "Archive here" : "Drop here"}
             </div>
-          </div>
-        )}
-
-        {isArchive && column.cards.length === 0 && (
-          <div className="flex flex-col items-center justify-center text-gray-400 p-4 h-32">
-            <Archive className="w-8 h-8 mb-2" />
-            <p className="text-sm text-center">
-              Drag cards here to archive them
-            </p>
           </div>
         )}
       </div>
